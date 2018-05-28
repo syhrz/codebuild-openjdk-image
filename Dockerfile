@@ -4,5 +4,7 @@ RUN chmod 755 /usr/local/bin/aws-sudo
 COPY gradle.properties.general1-large /root/.gradle/gradle.properties
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		python-pip \
+        python-setuptools \
+        python-wheel \
 	&& rm -rf /var/lib/apt/lists/*
-RUN pip install setuptools wheel awscli
+RUN pip install awscli

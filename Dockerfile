@@ -5,4 +5,4 @@ COPY gradle.properties.general1-large /root/.gradle/gradle.properties
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		python-pip \
 	&& rm -rf /var/lib/apt/lists/*
-RUN pip install awscli
+RUN pip install setuptools wheel awscli

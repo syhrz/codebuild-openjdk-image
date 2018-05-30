@@ -1,1 +1,0 @@
-org.gradle.jvmargs=-server -Xms14g -Xmx14g -XX:+UseConcMarkSweepGC -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8

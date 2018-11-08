@@ -1,0 +1,32 @@
+runner:
+  beisca_checkstyle:
+    cmd: cat .beisca_err
+    errorformat:
+      - "[ant:checkstyle] [ERROR] %f:%l: %m"
+
+  beiscac_xlint:
+    cmd: cat .beisca_err
+    errorformat:
+      - "%+Z  Did you mean%m"
+      - "%C%p^"
+      - "%C%[ A-Za-z_]%.%+"
+      - "%E%f:%l: error: [%[a-z]%.%+]%m"
+
+# need improvement
+# 6 out of 213 errors are not parsed correctly
+# changing '+C' to '+Z' is a workaround. However the "Did you mean" info, which may be valuable, is lost
+  beiscac_errorprone:
+    cmd: cat .beisca_err
+    errorformat:
+      - "%+C    (%.%+"
+      - "%+Z  Did you mean%m"
+      - "%C%p^"
+      - "%C%[ A-Za-z_]%.%+"
+      - "%E%f:%l: error: [%[A-Z]%.%+]%m"
+
+  beisca_depcheck:
+    cmd: cat .beisca_err
+    errorformat:
+      - "%E%[%^:]%#[dependency-analyze] %f:%l: %m"
+      - "%C%[ ]%+%m"
+      - "%Z"

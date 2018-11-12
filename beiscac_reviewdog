@@ -26,8 +26,11 @@ if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
     BASE_COMMIT=$(git merge-base HEAD $CI_REPO_REMOTE_NAME/$BASE_REF)
     # echo $BASE_COMMIT
     $BEISCAC_COMMAND 2>.beisca_err || cat .beisca_err
-    REVIEWDOG_GITHUB_API_TOKEN=$GITHUB_TOKEN reviewdog_linux_amd64 -diff="git diff $BASE_COMMIT" -conf=${BEISCAC_REVIEWDOG_COMMENTS_CONF} -reporter=github-pr-review
+    if [ -z "$BEISCAC_REVIEWDOG_DIFF" ]; then
+        BEISCAC_REVIEWDOG_DIFF = "git diff $BASE_COMMIT"
+    fi
+    REVIEWDOG_GITHUB_API_TOKEN=$GITHUB_TOKEN reviewdog_linux_amd64 -diff="${BEISCAC_REVIEWDOG_DIFF}" -conf=${BEISCAC_REVIEWDOG_COMMENTS_CONF} -reporter=github-pr-review
     if [ -n "$REVIEWDOG_TOKEN" ]; then
-        reviewdog_linux_amd64 -diff="git diff $BASE_COMMIT" -conf=${BEISCAC_REVIEWDOG_CHECKS_CONF} -reporter=github-pr-check
+        reviewdog_linux_amd64 -diff="${BEISCAC_REVIEWDOG_DIFF}" -conf=${BEISCAC_REVIEWDOG_CHECKS_CONF} -reporter=github-pr-check
     fi
 fi

@@ -3,6 +3,7 @@
 
 set -evo pipefail
 CODEBUILD_PULL_REQUEST_PATTERN="^pr/[0-9]+$"
+RETVAL=0
 if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
     : "${GITHUB_TOKEN:?Need to set GITHUB_TOKEN}"
     : "${BEISCAC_COMMAND:?Need to set BEISCAC_COMMAND}"
@@ -21,7 +22,7 @@ if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
     export CI_COMMIT=$(git rev-parse HEAD)
     # echo $CI_COMMIT
     CI_REPO_REMOTE_NAME=origin
-    $BEISCAC_COMMAND 2>.beisca_err || cat .beisca_err
+    $BEISCAC_COMMAND 2>.beisca_err || (RETVAL=1 && cat .beisca_err)
     if [ -z "${BEISCAC_REVIEWDOG_DIFF}" ]; then
         BASE_REF=$(curl -su :$GITHUB_TOKEN https://api.github.com/repos/$CI_REPO_FULL_NAME/pulls/$CI_PULL_REQUEST | jq-linux64 ".base.ref" | sed "s/\"//g")
         # echo $BASE_REF
@@ -34,3 +35,4 @@ if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
         reviewdog_linux_amd64 -diff="${BEISCAC_REVIEWDOG_DIFF}" -conf=${BEISCAC_REVIEWDOG_CHECKS_CONF} -reporter=github-pr-check
     fi
 fi
+exit $RETVAL

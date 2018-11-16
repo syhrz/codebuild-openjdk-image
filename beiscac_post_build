@@ -1,38 +1,25 @@
 #!/bin/bash
 # traveloka beisca -- codebuild implementation
-
 set -evo pipefail
 CODEBUILD_PULL_REQUEST_PATTERN="^pr/[0-9]+$"
-RETVAL=0
 if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
     : "${GITHUB_TOKEN:?Need to set GITHUB_TOKEN}"
-    : "${BEISCAC_COMMAND:?Need to set BEISCAC_COMMAND}"
     : "${BEISCAC_REVIEWDOG_COMMENTS_CONF:?Need to set BEISCAC_REVIEWDOG_COMMENTS_CONF}"
     : "${BEISCAC_REVIEWDOG_CHECKS_CONF:?Need to set BEISCAC_REVIEWDOG_CHECKS_CONF}"
-
     export CI_PULL_REQUEST=${CODEBUILD_SOURCE_VERSION:3}
-    # echo $CI_PULL_REQUEST
     export CI_REPO_FULL_NAME=$(git config --get remote.origin.url | grep -Po "[A-Za-z0-9_\-]+/[^./]+(?=.git)")
-    # echo $CI_REPO_FULL_NAME
     GIT_URL_SLASH_POSITION=$(expr index ${CI_REPO_FULL_NAME} "/")
     export CI_REPO_OWNER=${CI_REPO_FULL_NAME::GIT_URL_SLASH_POSITION-1}
-    # echo $CI_REPO_OWNER
     export CI_REPO_NAME=${CI_REPO_FULL_NAME:GIT_URL_SLASH_POSITION}
-    # echo $CI_REPO_NAME
     export CI_COMMIT=$(git rev-parse HEAD)
-    # echo $CI_COMMIT
-    CI_REPO_REMOTE_NAME=origin
-    $BEISCAC_COMMAND 2>.beisca_err || (RETVAL=1 && cat .beisca_err)
+    export CI_REPO_REMOTE_NAME=origin
     if [ -z "${BEISCAC_REVIEWDOG_DIFF}" ]; then
         BASE_REF=$(curl -su :$GITHUB_TOKEN https://api.github.com/repos/$CI_REPO_FULL_NAME/pulls/$CI_PULL_REQUEST | jq-linux64 ".base.ref" | sed "s/\"//g")
-        # echo $BASE_REF
         BASE_COMMIT=$(git merge-base HEAD $CI_REPO_REMOTE_NAME/$BASE_REF)
-        # echo $BASE_COMMIT
-        export BEISCAC_REVIEWDOG_DIFF="git diff $BASE_COMMIT"
+        BEISCAC_REVIEWDOG_DIFF="git diff $BASE_COMMIT"
     fi
     REVIEWDOG_GITHUB_API_TOKEN=$GITHUB_TOKEN reviewdog_linux_amd64 -diff="${BEISCAC_REVIEWDOG_DIFF}" -conf=${BEISCAC_REVIEWDOG_COMMENTS_CONF} -reporter=github-pr-review
     if [ -n "$REVIEWDOG_TOKEN" ]; then
         reviewdog_linux_amd64 -diff="${BEISCAC_REVIEWDOG_DIFF}" -conf=${BEISCAC_REVIEWDOG_CHECKS_CONF} -reporter=github-pr-check
     fi
 fi
-exit $RETVAL

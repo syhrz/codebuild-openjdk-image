@@ -1,0 +1,8 @@
+#!/bin/bash
+# traveloka beisca -- codebuild implementation
+set -evo pipefail
+CODEBUILD_PULL_REQUEST_PATTERN="^pr/[0-9]+$"
+if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
+    : "${BEISCAC_COMMAND:?Need to set BEISCAC_COMMAND}"
+    $BEISCAC_COMMAND 2>.beisca_err
+fi

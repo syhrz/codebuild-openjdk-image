@@ -22,4 +22,5 @@ if [[ ${CODEBUILD_SOURCE_VERSION} =~ ${CODEBUILD_PULL_REQUEST_PATTERN} ]]; then
     if [ -n "$REVIEWDOG_TOKEN" ]; then
         reviewdog_linux_amd64 -diff="${BEISCAC_REVIEWDOG_DIFF}" -conf=${BEISCAC_REVIEWDOG_CHECKS_CONF} -reporter=github-pr-check
     fi
+    cat .beisca_err
 fi
